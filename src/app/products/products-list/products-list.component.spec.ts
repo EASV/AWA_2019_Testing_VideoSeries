@@ -5,6 +5,7 @@ import {ProductService} from '../shared/product.service';
 import {FileService} from '../../files/shared/file.service';
 import {Observable, of} from 'rxjs';
 import {Product} from '../shared/product.model';
+import {By} from '@angular/platform-browser';
 
 describe('ProductsListComponent', () => {
   let component: ProductsListComponent;
@@ -29,6 +30,11 @@ describe('ProductsListComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should contain an h2 tag', () => {
+    const h2Ele = fixture.debugElement.query(By.css('h2'));
+    expect(h2Ele.nativeElement.textContent).toBe('List all Products');
   });
 });
 

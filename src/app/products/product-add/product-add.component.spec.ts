@@ -4,6 +4,7 @@ import { ProductAddComponent } from './product-add.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ImageCropperModule} from 'ngx-image-cropper';
 import {RouterTestingModule} from '@angular/router/testing';
+import {ProductService} from '../shared/product.service';
 
 describe('ProductAddComponent', () => {
   let component: ProductAddComponent;
@@ -16,6 +17,9 @@ describe('ProductAddComponent', () => {
         ReactiveFormsModule,
         ImageCropperModule,
         RouterTestingModule
+      ],
+      providers: [
+        {provide: ProductService, useClass: ProductServiceStub}
       ]
     })
     .compileComponents();
@@ -31,3 +35,5 @@ describe('ProductAddComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+class ProductServiceStub {}

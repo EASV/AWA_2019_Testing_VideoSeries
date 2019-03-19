@@ -1,0 +1,29 @@
+
+<h2>Add New Product</h2>
+<form [formGroup]="productFormGroup" (ngSubmit)="addProduct()">
+
+  <label>
+    Name
+    <input type="text" formControlName="name">
+  </label>
+
+  <input type="file" (change)="uploadFile($event)" accept="image/*">
+
+  <button type="submit">Add</button>
+</form>
+
+<div>
+  <image-cropper
+    style="width: 512px; height: 512px;float:left;"
+    [imageChangedEvent]="imageChangedEvent"
+    format="png"
+    (imageCropped)="imageCropped($event)"
+    [aspectRatio]="1/1"
+    [resizeToWidth]="128"
+    [onlyScaleDown]="true"
+    [cropperMinWidth]="128"
+    [roundCropper]="true"
+  ></image-cropper>
+  <img [src]="croppedImage"
+       style="width: 128px; height: 128px;float: left;border-radius: 50%">
+</div>

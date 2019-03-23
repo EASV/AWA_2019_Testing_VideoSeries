@@ -5,10 +5,12 @@ import {ProductAddComponent} from './product-add/product-add.component';
 
 const routes: Routes = [
   {
+    // /products/add
     path: 'add',
     component: ProductAddComponent
   },
   {
+    // /products
     path: '',
     component: ProductsListComponent
   }

@@ -5,7 +5,7 @@
       <img [src]="product.url"
            *ngIf="product.url"
            style="width: 24px; height: 24px;">
-      {{product.name}} -- {{product.id}}
+      <span>{{product.name}} -- {{product.id}}</span>
       <button (click)="deleteProduct(product)">Delete</button>
   </li>
 </ul>

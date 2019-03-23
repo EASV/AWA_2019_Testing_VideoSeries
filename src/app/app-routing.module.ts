@@ -7,6 +7,7 @@ const routes: Routes = [
     loadChildren: './customers/customers.module#CustomersModule'
   },
   {
+    // /products
     path: 'products',
     loadChildren: './products/products.module#ProductsModule'
   },

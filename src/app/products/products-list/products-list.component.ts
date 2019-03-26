@@ -2,9 +2,8 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Observable, Subscription} from 'rxjs';
 import {ProductService} from '../shared/product.service';
 import {Product} from '../shared/product.model';
-import {FormControl, FormGroup} from '@angular/forms';
 import {FileService} from '../../files/shared/file.service';
-import {switchMap, tap} from 'rxjs/operators';
+import {first, tap} from 'rxjs/operators';
 @Component({
   selector: 'app-products-list',
   templateUrl: './products-list.component.html',
@@ -13,7 +12,7 @@ import {switchMap, tap} from 'rxjs/operators';
 export class ProductsListComponent implements OnInit {
   products: Observable<Product[]>;
   constructor(private ps: ProductService,
-                private fs: FileService) {
+              private fs: FileService) {
   }
 
   ngOnInit() {
@@ -23,6 +22,7 @@ export class ProductsListComponent implements OnInit {
           products.forEach(product => {
             if (product.pictureId) {
               this.fs.getFileUrl(product.pictureId)
+                .pipe(first())
                 .subscribe(url => {
                   product.url = url;
                 });
@@ -35,10 +35,9 @@ export class ProductsListComponent implements OnInit {
   deleteProduct(product: Product) {
     const obs = this.ps.deleteProduct(product.id);
     obs.subscribe(productFromFirebase => {
-      debugger;
-        window.alert('product with id: ' + productFromFirebase.id + ' is Deleted');
+        window.alert('product with id: ' +
+          productFromFirebase.id + ' is Deleted');
       }, error1 => {
-      debugger;
       window.alert('product not found id: ' + product.id);
     });
   }

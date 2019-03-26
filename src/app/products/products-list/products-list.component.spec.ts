@@ -9,11 +9,20 @@ import {By} from '@angular/platform-browser';
 import {RouterTestingModule} from '@angular/router/testing';
 import {Component} from '@angular/core';
 import {Location} from '@angular/common';
+import {DOMHelper} from '../../../testing/dom-helper';
 
 describe('ProductsListComponent', () => {
   let component: ProductsListComponent;
   let fixture: ComponentFixture<ProductsListComponent>;
+  let helper: Helper;
+  let dh: DOMHelper<ProductsListComponent>;
+  let productServiceMock: any;
+  let fileServiceMock: any;
   beforeEach(async(() => {
+    productServiceMock = jasmine.createSpyObj('ProductService', ['getProducts']);
+    productServiceMock.getProducts.and.returnValue(of([]));
+    fileServiceMock = jasmine.createSpyObj('FileService', ['getFileUrl']);
+    fileServiceMock.getFileUrl.and.returnValue('');
     TestBed.configureTestingModule({
       declarations: [
         ProductsListComponent,
@@ -27,8 +36,8 @@ describe('ProductsListComponent', () => {
         )
       ],
       providers: [
-        {provide: ProductService, useClass: ProductServiceStub},
-        {provide: FileService, useClass: FileServiceStub}
+        {provide: ProductService, useValue: productServiceMock},
+        {provide: FileService, useValue: fileServiceMock}
       ]
     })
     .compileComponents();
@@ -37,6 +46,8 @@ describe('ProductsListComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductsListComponent);
     component = fixture.componentInstance;
+    helper = new Helper();
+    dh = new DOMHelper(fixture);
     fixture.detectChanges();
   });
 
@@ -45,25 +56,15 @@ describe('ProductsListComponent', () => {
   });
 
   it('should contain an h2 tag', () => {
-    const h2Ele = fixture.debugElement.query(By.css('h2'));
-    const h2HTMLElement: HTMLHeadElement = h2Ele.nativeElement;
-    expect(h2HTMLElement.textContent)
-      .toBe('List all Products');
+    expect(dh.singleText('h2')).toBe('List all Products');
   });
 
   it('Should minimum be one button on the page', () => {
-    // find DebugElements with an attached RouterLinkStubDirective
-    const buttons = fixture.debugElement
-      .queryAll(By.css('button'));
-    expect(buttons.length >= 1).toBeTruthy();
+    expect(dh.count('button')).toBeGreaterThanOrEqual(1);
   });
 
   it('Should be a + button first on the page', () => {
-    // find DebugElements with an attached RouterLinkStubDirective
-    const linkDes = fixture.debugElement
-      .queryAll(By.css('button'));
-    const nativeButton: HTMLButtonElement = linkDes[0].nativeElement;
-    expect(nativeButton.textContent).toBe('+');
+    expect(dh.singleText('button')).toBe('+');
   });
 
   it('Should navigate to / before + button click',
@@ -88,88 +89,57 @@ describe('ProductsListComponent', () => {
   });
 
   it('Should show One Unordered List Item', () => {
-    const unorderedList = fixture.debugElement
-      .queryAll(By.css('ul'));
-    expect(unorderedList.length).toBe(1);
+    expect(dh.count('ul')).toBe(1);
   });
 
   it('Should show no list item when no products are available', () => {
-    const listItem = fixture.debugElement
-      .queryAll(By.css('li'));
-    expect(listItem.length).toBe(0);
+    expect(dh.count('li')).toBe(0);
   });
 
   it('Should show one list item when I have one product', () => {
-    component.products = of([
-      {id: 'abc', name: 'item1', pictureId: 'def'}
-    ]);
+    component.products = helper.getProducts(1);
     fixture.detectChanges();
-    const listItem = fixture.debugElement
-      .queryAll(By.css('li'));
-    expect(listItem.length).toBe(1);
+    expect(dh.count('li')).toBe(1);
   });
 
   it('Should show 100 list item when I have 100 products', () => {
-    const products: Product[] = [];
-    for (let i = 0; i < 100; i++) {
-      products.push(
-        {id: 'abc' + i, name: 'item1', pictureId: 'def'}
-      );
-    }
-    component.products = of(products);
+    component.products = helper.getProducts(100);
     fixture.detectChanges();
-    const listItem = fixture.debugElement
-      .queryAll(By.css('li'));
-    expect(listItem.length).toBe(100);
+    expect(dh.count('li')).toBe(100);
   });
 
-  it('Should show 100 delete buttons, 1 pr. item', () => {
-    const products: Product[] = [];
-    for (let i = 0; i < 100; i++) {
-      products.push(
-        {id: 'abc' + i, name: 'item1', pictureId: 'def'}
-      );
-    }
-    component.products = of(products);
+  it('Should show 100 Delete buttons, 1 pr. item', () => {
+    component.products = helper.getProducts(100);
     fixture.detectChanges();
-    let listItem = fixture.debugElement
-      .queryAll(By.css('button'));
-    // remove add button
-    listItem = listItem.slice(1, listItem.length);
-    expect(listItem.length).toBe(100);
+    expect(dh.countText('button', 'Delete')).toBe(100);
+  });
+
+  it('Should show 1 span pr product', () => {
+    component.products = helper.getProducts(1);
+    fixture.detectChanges();
+    expect(dh.count('span')).toBe(1);
   });
 
   it('Should show 1 product name and id in span', () => {
-    const product  = {id: 'abc', name: 'item', pictureId: 'def'};
-    component.products = of([product]);
+    component.products = helper.getProducts(1);
     fixture.detectChanges();
-    const spanItems = fixture.debugElement
-      .queryAll(By.css('span'));
-    expect(spanItems.length).toBe(1);
-    const span = spanItems[0];
-    const spanElement: HTMLSpanElement = span.nativeElement;
-    expect(spanElement.textContent)
-      .toBe(product.name + ' -- ' + product.id);
+    expect(dh.singleText('span'))
+      .toBe(helper.products[0].name + ' -- ' + helper.products[0].id);
+  });
+
+  it('Should show 5 spans, 1 pr. product', () => {
+    component.products = helper.getProducts(5);
+    fixture.detectChanges();
+    expect(dh.count('span')).toBe(5);
   });
 
   it('Should show 5 product names and ids in spans', () => {
-    const products: Product[] = [];
-    for (let i = 0; i < 5; i++) {
-      products.push(
-        {id: 'abc' + i, name: 'item' + i, pictureId: 'def'}
-      );
-    }
-    component.products = of(products);
+    component.products = helper.getProducts(5);
     fixture.detectChanges();
-    const spanItems = fixture.debugElement
-      .queryAll(By.css('span'));
-    expect(spanItems.length).toBe(5);
     for (let i = 0; i < 5; i++) {
-      const span = spanItems[i];
-      const product = products[i];
-      const spanElement: HTMLSpanElement = span.nativeElement;
-      expect(spanElement.textContent)
-        .toBe(product.name + ' -- ' + product.id);
+      const product = helper.products[i];
+      expect(dh.countText('span', product.name + ' -- ' + product.id))
+        .toBe(1);
     }
   });
 });
@@ -177,10 +147,15 @@ describe('ProductsListComponent', () => {
 @Component({ template: '' })
 class DummyComponent {}
 
-class ProductServiceStub {
-  getProducts(): Observable<Product[]> {
-    return of([]);
+class Helper {
+  products: Product[] = [];
+  getProducts(amount: number): Observable<Product[]> {
+    for (let i = 0; i < amount; i++) {
+      this.products.push(
+        {id: 'abc' + i, name: 'item' + i, pictureId: 'def'}
+      );
+    }
+    return of(this.products);
+
   }
 }
-
-class FileServiceStub {}

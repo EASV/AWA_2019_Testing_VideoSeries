@@ -10,6 +10,11 @@ const routes: Routes = [
     component: ProductAddComponent
   },
   {
+    // /products/edit
+    path: 'edit/:id',
+    component: ProductAddComponent
+  },
+  {
     // /products
     path: '',
     component: ProductsListComponent

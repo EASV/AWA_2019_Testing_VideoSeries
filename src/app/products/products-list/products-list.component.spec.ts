@@ -10,6 +10,7 @@ import {RouterTestingModule} from '@angular/router/testing';
 import {Component} from '@angular/core';
 import {Location} from '@angular/common';
 import {DOMHelper} from '../../../testing/dom-helper';
+import {Router} from '@angular/router';
 
 describe('ProductsListComponent', () => {
   let component: ProductsListComponent;
@@ -25,15 +26,10 @@ describe('ProductsListComponent', () => {
     fileServiceMock.getFileUrl.and.returnValue('');
     TestBed.configureTestingModule({
       declarations: [
-        ProductsListComponent,
-        DummyComponent
+        ProductsListComponent
       ],
       imports: [
-        RouterTestingModule.withRoutes(
-          [
-            { path: 'add', component: DummyComponent }
-          ]
-        )
+        RouterTestingModule
       ],
       providers: [
         {provide: ProductService, useValue: productServiceMock},
@@ -77,15 +73,12 @@ describe('ProductsListComponent', () => {
 
   it('Should navigate to /add on + button click',
     () => {
-      const location = TestBed.get(Location);
-      const linkDes = fixture.debugElement
-        .queryAll(By.css('button'));
-      const nativeButton: HTMLButtonElement = linkDes[0].nativeElement;
-      nativeButton.click();
-      fixture.detectChanges();
-      fixture.whenStable().then(() => {
-        expect(location.path()).toBe('/add');
-      });
+      const router: Router = TestBed.get(Router);
+      spyOn(router, 'navigateByUrl');
+      dh.clickButton('+');
+      expect(router.navigateByUrl).
+        toHaveBeenCalledWith(router.createUrlTree(['/add']),
+        { skipLocationChange: false, replaceUrl: false });
   });
 
   it('Should show One Unordered List Item', () => {
@@ -144,9 +137,6 @@ describe('ProductsListComponent', () => {
   });
 });
 
-@Component({ template: '' })
-class DummyComponent {}
-
 class Helper {
   products: Product[] = [];
   getProducts(amount: number): Observable<Product[]> {
@@ -156,6 +146,5 @@ class Helper {
       );
     }
     return of(this.products);
-
   }
 }

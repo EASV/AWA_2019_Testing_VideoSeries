@@ -1,13 +1,11 @@
-import {async, ComponentFixture, fakeAsync, inject, TestBed} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import { ProductsListComponent } from './products-list.component';
 import {ProductService} from '../shared/product.service';
 import {FileService} from '../../files/shared/file.service';
 import {Observable, of} from 'rxjs';
 import {Product} from '../shared/product.model';
-import {By} from '@angular/platform-browser';
 import {RouterTestingModule} from '@angular/router/testing';
-import {Component} from '@angular/core';
 import {Location} from '@angular/common';
 import {DOMHelper} from '../../../testing/dom-helper';
 import {Router} from '@angular/router';
@@ -134,6 +132,22 @@ describe('ProductsListComponent', () => {
       expect(dh.countText('span', product.name + ' -- ' + product.id))
         .toBe(1);
     }
+  });
+
+  it('Should call deleteProduct once when we click Delete button', () => {
+    component.products = helper.getProducts(1);
+    fixture.detectChanges();
+    spyOn(component, 'deleteProduct');
+    dh.clickButton('Delete');
+    expect(component.deleteProduct).toHaveBeenCalledTimes(1);
+  });
+
+  it('Should call deleteProduct with the product to delete when we click Delete button', () => {
+    component.products = helper.getProducts(1);
+    fixture.detectChanges();
+    spyOn(component, 'deleteProduct');
+    dh.clickButton('Delete');
+    expect(component.deleteProduct).toHaveBeenCalledWith(helper.products[0]);
   });
 });
 

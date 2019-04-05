@@ -20,7 +20,6 @@ describe('ProductsListComponent', () => {
     productServiceMock = jasmine.createSpyObj('ProductService', ['getProducts']);
     productServiceMock.getProducts.and.returnValue(of([]));
     fileServiceMock = jasmine.createSpyObj('FileService', ['getFileUrl']);
-    fileServiceMock.getFileUrl.and.returnValue('');
     TestBed.configureTestingModule({
       declarations: [
         ProductsListComponent
@@ -33,17 +32,19 @@ describe('ProductsListComponent', () => {
         {provide: FileService, useValue: fileServiceMock}
       ]
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductsListComponent);
     component = fixture.componentInstance;
     dh = new DOMHelper(fixture);
-    fixture.detectChanges();
   });
 
   describe('Simple HTML', () => {
+    beforeEach(() => {
+      fixture.detectChanges();
+    });
     // Simple HTML
     it('should create', () => {
       expect(component).toBeTruthy();
@@ -66,6 +67,7 @@ describe('ProductsListComponent', () => {
     let helper: Helper;
     beforeEach(() => {
       helper = new Helper();
+      fixture.detectChanges();
     });
     it('Should show One Unordered List Item', () => {
       expect(dh.count('ul')).toBe(1);
@@ -121,12 +123,29 @@ describe('ProductsListComponent', () => {
           .toBe(1);
       }
     });
+
+    it('Should not show img tag without a url on the Product', () => {
+      component.products = helper.getProducts(1);
+      fixture.detectChanges();
+      expect(dh.count('img'))
+        .toBe(0);
+    });
+
+    it('Should show img tag with a url on the Product', () => {
+      component.products = helper.getProducts(1);
+      helper.products[0].url = 'http://a-url';
+      fixture.detectChanges();
+      expect(dh.count('img'))
+        .toBe(1);
+
+    });
   });
 
   describe('Delete Products', () => {
     let helper: Helper;
     beforeEach(() => {
       helper = new Helper();
+      fixture.detectChanges();
     });
     it('Should call deleteProduct once when we click Delete button', () => {
       component.products = helper.getProducts(1);
@@ -151,6 +170,7 @@ describe('ProductsListComponent', () => {
     beforeEach(() => {
       location = TestBed.get(Location);
       router = TestBed.get(Router);
+      fixture.detectChanges();
     });
     // Navigation
     it('Should navigate to / before + button click',
@@ -170,6 +190,34 @@ describe('ProductsListComponent', () => {
       });
   });
 
+  describe('Call NgOnInit on Demand', () => {
+    let helper: Helper;
+    beforeEach(() => {
+      helper = new Helper();
+    });
+
+    it('Should call getProducts on the ProductService one time on ngOnInit', () => {
+      fixture.detectChanges();
+      expect(productServiceMock.getProducts).toHaveBeenCalledTimes(1);
+    });
+
+    it('Should show img tag when product with url is loaded async from ProductService',
+      () => {
+        productServiceMock.getProducts.and.returnValue(helper.getProducts(1));
+        fileServiceMock.getFileUrl.and.returnValue(of('http://slknfles'));
+        fixture.detectChanges();
+        expect(dh.count('img')).toBe(1);
+      });
+
+    it('Should not show img tag when product does not have pictureId and is loaded async from ProductService',
+      () => {
+        productServiceMock.getProducts.and.returnValue(helper.getProducts(1));
+        helper.products[0].pictureId = undefined;
+        fileServiceMock.getFileUrl.and.returnValue(of('http://slknfles'));
+        fixture.detectChanges();
+        expect(dh.count('img')).toBe(0);
+      });
+  });
 });
 
 class Helper {
@@ -177,7 +225,7 @@ class Helper {
   getProducts(amount: number): Observable<Product[]> {
     for (let i = 0; i < amount; i++) {
       this.products.push(
-        {id: 'abc' + i, name: 'item' + i, pictureId: 'def'}
+        {id: 'abc' + i, name: 'item' + i, pictureId: 'abc' + i}
       );
     }
     return of(this.products);

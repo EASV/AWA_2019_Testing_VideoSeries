@@ -43,13 +43,9 @@ export class ProductService {
       .get()
       .pipe(
         first(),
-        tap(productDocument => {
-          debugger;
-        }),
         switchMap(productDocument => {
           if (!productDocument || !productDocument.data()) {
             throw new Error('Product not found');
-            debugger;
           } else {
             return from(
               this.db.doc<Product>(collection_path + '/' + id)
@@ -122,4 +118,50 @@ export class ProductService {
       })
     );
   }
+
+  /*
+  getProducts(): Observable<Product[]> {
+    return this.db
+      .collection<Product>(collection_path)
+      // This will return an Observable
+      .snapshotChanges()
+      .pipe(
+        map(actions => {
+          // actions is an array of DocumentChangeAction
+          const products = actions.map(action => {
+            const product: Product = action.payload.doc.data() as Product;
+            return {
+              id: action.payload.doc.id,
+              name: product.name,
+              pictureId: product.pictureId,
+              url: undefined
+            };
+          });
+          return products;
+        }),
+        switchMap(products => {
+          // Map the projects to the array of observables that are to be
+          // joined.
+          const productObservables = products.map(product => {
+              if (product.pictureId) {
+                return this.fs.getFileUrl(product.pictureId);
+              }
+            }
+          );
+          if (productObservables.length > 0) {
+            return forkJoin<string>(...productObservables)
+              .pipe(
+                map(urls => {
+                  products.forEach((project, index) => {
+                    project.url = urls[index];
+                  });
+                  return products;
+                })
+              );
+          }
+          return of(products);
+        })
+      );
+  }
+   */
 }

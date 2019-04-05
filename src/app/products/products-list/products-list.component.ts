@@ -1,9 +1,7 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Observable, Subscription} from 'rxjs';
+import {Component, OnInit} from '@angular/core';
+import {Observable} from 'rxjs';
 import {ProductService} from '../shared/product.service';
 import {Product} from '../shared/product.model';
-import {FileService} from '../../files/shared/file.service';
-import {first, tap} from 'rxjs/operators';
 @Component({
   selector: 'app-products-list',
   templateUrl: './products-list.component.html',
@@ -11,25 +9,11 @@ import {first, tap} from 'rxjs/operators';
 })
 export class ProductsListComponent implements OnInit {
   products: Observable<Product[]>;
-  constructor(private ps: ProductService,
-              private fs: FileService) {
+  constructor(private ps: ProductService) {
   }
 
   ngOnInit() {
-    this.products = this.ps.getProducts()
-      .pipe(
-        tap(products => {
-          products.forEach(product => {
-            if (product.pictureId) {
-              this.fs.getFileUrl(product.pictureId)
-                .pipe(first())
-                .subscribe(url => {
-                  product.url = url;
-                });
-            }
-          });
-        })
-      );
+    this.products = this.ps.getProducts();
   }
 
   deleteProduct(product: Product) {

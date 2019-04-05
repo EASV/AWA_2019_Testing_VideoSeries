@@ -2,7 +2,6 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import { ProductsListComponent } from './products-list.component';
 import {ProductService} from '../shared/product.service';
-import {FileService} from '../../files/shared/file.service';
 import {Observable, of} from 'rxjs';
 import {Product} from '../shared/product.model';
 import {RouterTestingModule} from '@angular/router/testing';
@@ -15,11 +14,9 @@ describe('ProductsListComponent', () => {
   let fixture: ComponentFixture<ProductsListComponent>;
   let dh: DOMHelper<ProductsListComponent>;
   let productServiceMock: any;
-  let fileServiceMock: any;
   beforeEach(async(() => {
     productServiceMock = jasmine.createSpyObj('ProductService', ['getProducts']);
     productServiceMock.getProducts.and.returnValue(of([]));
-    fileServiceMock = jasmine.createSpyObj('FileService', ['getFileUrl']);
     TestBed.configureTestingModule({
       declarations: [
         ProductsListComponent
@@ -28,8 +25,7 @@ describe('ProductsListComponent', () => {
         RouterTestingModule
       ],
       providers: [
-        {provide: ProductService, useValue: productServiceMock},
-        {provide: FileService, useValue: fileServiceMock}
+        {provide: ProductService, useValue: productServiceMock}
       ]
     })
       .compileComponents();
@@ -204,7 +200,7 @@ describe('ProductsListComponent', () => {
     it('Should show img tag when product with url is loaded async from ProductService',
       () => {
         productServiceMock.getProducts.and.returnValue(helper.getProducts(1));
-        fileServiceMock.getFileUrl.and.returnValue(of('http://slknfles'));
+        helper.products[0].url = 'http://cheese';
         fixture.detectChanges();
         expect(dh.count('img')).toBe(1);
       });
@@ -212,8 +208,7 @@ describe('ProductsListComponent', () => {
     it('Should not show img tag when product does not have pictureId and is loaded async from ProductService',
       () => {
         productServiceMock.getProducts.and.returnValue(helper.getProducts(1));
-        helper.products[0].pictureId = undefined;
-        fileServiceMock.getFileUrl.and.returnValue(of('http://slknfles'));
+        helper.products[0].url = undefined;
         fixture.detectChanges();
         expect(dh.count('img')).toBe(0);
       });
